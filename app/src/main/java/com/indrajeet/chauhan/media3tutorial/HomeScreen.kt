@@ -1,5 +1,6 @@
 package com.indrajeet.chauhan.media3tutorial
 
+import androidx.annotation.OptIn
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -14,9 +15,14 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.media3.common.MediaItem
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.MediaSource
+import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import androidx.media3.ui.PlayerView
 
+@OptIn(UnstableApi::class)
 @Composable
 fun HomeScreen() {
     var lifecycle by remember {
@@ -25,16 +31,19 @@ fun HomeScreen() {
     val context = LocalContext.current
 
     val mediaItem =
-        MediaItem.fromUri("android.resource://${context.packageName}/${R.raw.sample_video}")
+        MediaItem.fromUri("https://assets.mixkit.co/videos/preview/mixkit-stunning-sunset-seen-from-the-sea-4119-large.mp4")
 
-    val exoPlayer =
-        remember {
-            ExoPlayer.Builder(context).build().apply {
-                setMediaItem(mediaItem)
-                prepare()
-                playWhenReady = true
-            }
+    val mediaSource: MediaSource =
+        ProgressiveMediaSource.Factory(DefaultHttpDataSource.Factory())
+            .createMediaSource(mediaItem)
+
+    val exoPlayer = remember {
+        ExoPlayer.Builder(context).build().apply {
+            setMediaSource(mediaSource)
+            prepare()
+            playWhenReady = true
         }
+    }
 
     val lifecycleOwner = LocalLifecycleOwner.current
 
